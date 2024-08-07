@@ -1,5 +1,6 @@
 import {
   sampleRUM,
+  buildBlock,
   loadHeader,
   loadFooter,
   decorateButtons,
@@ -10,42 +11,26 @@ import {
   waitForLCP,
   loadBlocks,
   loadCSS,
+  getMetadata,
 } from './aem.js';
+import { createElement } from './common.js';
 
 const LCP_BLOCKS = []; // add your LCP blocks to the list
 
 /**
- * Moves all the attributes from a given elmenet to another given element.
- * @param {Element} from the element to copy attributes from
- * @param {Element} to the element to copy attributes to
+ * Builds hero block and prepends to main in a new section.
+ * @param {Element} main The container element
  */
-export function moveAttributes(from, to, attributes) {
-  if (!attributes) {
-    // eslint-disable-next-line no-param-reassign
-    attributes = [...from.attributes].map(({ nodeName }) => nodeName);
+// eslint-disable-next-line no-unused-vars
+function buildHeroBlock(main) {
+  const h1 = main.querySelector('h1');
+  const picture = main.querySelector('picture');
+  // eslint-disable-next-line no-bitwise
+  if (h1 && picture && (h1.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_PRECEDING)) {
+    const section = document.createElement('div');
+    section.append(buildBlock('hero', { elems: [picture, h1] }));
+    main.prepend(section);
   }
-  attributes.forEach((attr) => {
-    const value = from.getAttribute(attr);
-    if (value) {
-      to.setAttribute(attr, value);
-      from.removeAttribute(attr);
-    }
-  });
-}
-
-/**
- * Move instrumentation attributes from a given element to another given element.
- * @param {Element} from the element to copy attributes from
- * @param {Element} to the element to copy attributes to
- */
-export function moveInstrumentation(from, to) {
-  moveAttributes(
-    from,
-    to,
-    [...from.attributes]
-      .map(({ nodeName }) => nodeName)
-      .filter((attr) => attr.startsWith('data-aue-') || attr.startsWith('data-richtext-')),
-  );
 }
 
 /**
@@ -60,16 +45,138 @@ async function loadFonts() {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
+function buildPressReleases(main) {
+  const template = getMetadata('template');
+
+  function buildContactSection(contentSection) {
+    const contact = createElement('div', { classes: 'u-1/3' });
+    const contactSticky = createElement('div', { classes: 'c-structured-content__sticky' });
+    const buttons = createElement('div', { classes: 'c-structured-content__buttons' });
+    const downloadLink = createElement('a', {
+      classes: ['content-download-svg', 'c-btn', 'c-btn--dark', 'c-download'],
+      props: { href: '#' },
+      textContent: 'Download press kit',
+    });
+    downloadLink.append(createElement('br'));
+    downloadLink.innerHTML = `${downloadLink.innerHTML}  FR - EN - ES - DE - IT`;
+    buttons.append(downloadLink);
+    buttons.append(createElement('a', {
+      classes: 'c-btn',
+      props: {
+        href: '#',
+        ref: 'nofollow',
+      },
+      textContent: 'Subscribe to our press releases',
+    }));
+    contactSticky.append(buttons);
+
+    const wrapper = createElement('div', { classes: 'c-structured-content__wrapper' });
+    wrapper.append(createElement('p', {
+      classes: ['h2-like', 'h2-like--small'],
+      textContent: 'Press contact',
+    }));
+    const supportCfg = createElement('p', { classes: 'c-structured-content__contact' });
+    supportCfg.append(createElement('span', {
+      classes: 'c-structured-content__author',
+      textContent: 'Severyne Molard',
+    }));
+    supportCfg.append(createElement('span'));
+    supportCfg.innerHTML = `Phone : ${contentSection.getAttribute('data-phone')} <br> E-mail : ${contentSection.getAttribute('data-e-mail')}`;
+
+    wrapper.append(supportCfg);
+    contactSticky.append(wrapper);
+    contact.append(contactSticky);
+    return contact;
+  }
+
+  // replace all the content
+  function buildPressContent(contentSection) {
+    const contentContainerGlob = createElement('div', { classes: 'u-global-margin' });
+    const contentContainer = createElement('div', { classes: ['c-structured-content', 'o-grid'] });
+    contentContainerGlob.append(contentContainer);
+
+    // build content header
+    const header = createElement('div', { classes: 'c-structured-content__head' });
+    const date = createElement('p', {
+      classes: 'c-structured-content__date',
+      textContent: getMetadata('publishdata'),
+    });
+    header.append(date);
+
+    const title = createElement('h1', { classes: 'c-structured-content__title' });
+    title.append(contentSection.querySelector('h1'));
+    header.append(title);
+
+    const tags = createElement('p', { classes: 'c-structured-content__tags' });
+    const tagList = getMetadata('article:tag')
+      .split(',');
+    [...tagList].forEach((tag) => {
+      const tagLink = createElement('a', {
+        classes: 'c-structured-content__tags__link',
+        props: { href: '#' },
+        textContent: tag,
+      });
+      tags.append(tagLink);
+    });
+    header.append(tags);
+
+    contentContainer.append(header);
+
+    // render content
+    const content = createElement('div', { classes: ['c-structured-content__content', 'u-4/6'] });
+    const contentData = contentSection.cloneNode(true);
+    // contentData.removeChild(contentData.querySelector('h1'));
+    content.append(contentData.querySelector('.default-content-wrapper'));
+    // render contact block
+    const contact = buildContactSection(contentSection);
+    contentContainer.append(content);
+    contentContainer.append(contact);
+    contentSection.replaceChildren(contentContainerGlob);
+  }
+
+  // auto build press releases
+  if (template) {
+    switch (template) {
+      case 'Press releases': {
+        let contentSection;
+        main.querySelectorAll('.section')
+          .forEach((pre) => {
+            if (pre.classList.length === 1) {
+              contentSection = pre;
+            }
+          });
+        if (contentSection) {
+          buildPressContent(contentSection);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+}
+
 /**
  * Builds all synthetic blocks in a container element.
  * @param {Element} main The container element
  */
-function buildAutoBlocks() {
+// eslint-disable-next-line
+function buildAutoBlocks(main) {
   try {
-    // TODO: add auto block, if needed
+    // buildHeroBlock(main);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Auto Blocking failed', error);
+  }
+}
+
+function buildArticles(main) {
+  try {
+    buildPressReleases(main);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Auto Articles failed', error);
   }
 }
 
@@ -96,8 +203,19 @@ async function loadEager(doc) {
   decorateTemplateAndTheme();
   const main = doc.querySelector('main');
   if (main) {
+    main.id = 'content';
     decorateMain(main);
-    document.body.classList.add('appear');
+    // if homepage
+    if (window.location.href.split('/')
+      .pop() === '') {
+      document.body.classList.add('appear');
+      document.body.classList.add('home-page');
+      document.body.classList.add('node--type-homepage');
+    } else {
+      document.body.classList.add('path-node');
+    }
+    // render articles
+    buildArticles(main);
     await waitForLCP(LCP_BLOCKS);
   }
 
@@ -142,7 +260,6 @@ function loadDelayed() {
   // eslint-disable-next-line import/no-cycle
   window.setTimeout(() => import('./delayed.js'), 3000);
   // load anything that can be postponed to the latest here
-  import('./sidekick.js').then(({ initSidekick }) => initSidekick());
 }
 
 async function loadPage() {
