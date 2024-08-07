@@ -2,7 +2,9 @@
   "mappings": [
     "/content/renault-eds-demo-ue/:/",
     "/content/renault-eds-demo-ue/configuration:/.helix/config.json",
-    "/content/renault-eds-demo-ue/redirects.json",
-    "/content/renault-eds-demo-ue/en:/country.json"
+    "/content/renault-eds-demo-ue/redirects:/redirects.json",
+    "/content/renault-eds-demo-ue/en:/country.json",
+    "/content/renault-eds-demo-ue/en:/",
+    "/content/renault-eds-demo-ue/metadata:/metadata.json"
   ]
 }
