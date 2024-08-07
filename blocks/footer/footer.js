@@ -73,19 +73,19 @@ export default async function decorate(block) {
   const fragment = await loadFragment(footerPath);
   // render the country choose block
   block.textContent = '';
-  block.append(fragment.querySelector('.choosecountry-container'));
-  // decorate footer DOM
-  const footerContainer = document.createElement('div');
-  footerContainer.className = 'c-footer u-global-margin';
-  [...fragment.querySelectorAll('.section')].forEach((section) => {
-    const footerContent = section.cloneNode(true);
-    section.className = 'c-footer__content';
-    section.textContent = '';
-    const footerUlElement = footerContent.querySelector('div > ul');
-    if (footerUlElement) {
-      buildFooter(footerContent, section, footerUlElement);
-      footerContainer.append(section);
-    }
-  });
-  block.append(footerContainer);
+  // block.append(fragment.querySelector('.choosecountry-container'));
+  // // decorate footer DOM
+  // const footerContainer = document.createElement('div');
+  // footerContainer.className = 'c-footer u-global-margin';
+  // [...fragment.querySelectorAll('.section')].forEach((section) => {
+  //   const footerContent = section.cloneNode(true);
+  //   section.className = 'c-footer__content';
+  //   section.textContent = '';
+  //   const footerUlElement = footerContent.querySelector('div > ul');
+  //   if (footerUlElement) {
+  //     buildFooter(footerContent, section, footerUlElement);
+  //     footerContainer.append(section);
+  //   }
+  // });
+  block.append(fragment);
 }

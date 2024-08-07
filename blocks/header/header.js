@@ -113,10 +113,10 @@ export default async function decorate(block) {
   const navPath = navMeta ? new URL(navMeta, window.location).pathname : `${getLanguagePath()}nav`;
   const fragment = await loadFragment(navPath);
   // decorate nav DOM
-  block.textContent = '';
+  block.textContent = fragment;
 
-  buildTopSection(fragment, block);
-  buildNavSection(fragment, block);
+  // buildTopSection(fragment, block);
+  // buildNavSection(fragment, block);
   // add overlay of subpages
   const overlay = document.createElement('div');
   overlay.className = 'c-header-overlay';
