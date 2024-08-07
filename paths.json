@@ -1,6 +1,7 @@
 {
   "mappings": [
-    "/content/aem-boilerplate/:/",
-    "/content/aem-boilerplate/configuration:/.helix/config.json"
+    "/content/renault-eds-demo-ue/:/",
+    "/content/renault-eds-demo-ue/configuration:/.helix/config.json",
+    "/content/renault-eds-demo-ue/redirect.json"
   ]
 }
